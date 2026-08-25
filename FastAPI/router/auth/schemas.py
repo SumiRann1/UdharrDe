@@ -25,7 +25,7 @@ class VerifyOTPRequest(BaseModel):
 
 class CompleteProfileRequest(BaseModel):
     display_name: str = Field(..., min_length=3, description="Display name must be at least 3 characters")
-    phone: Optional[str] = Field(None, min_length=10, description="Phone number")
+    phone: str = Field(None, min_length=10, description="Phone number")
 
     @field_validator('phone')
     def validate_phone(cls, value):

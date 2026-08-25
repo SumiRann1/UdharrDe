@@ -1,14 +1,11 @@
 from typing import Optional
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from fastapi.responses import RedirectResponse
-from auth.client import supabase
+from .client import supabase
+from database import create_user
 from supabase_auth._sync.gotrue_client import parse_user_response
-from auth.deps import get_current_user, security, HTTPAuthorizationCredentials
-from auth.schemas import (
-    SignUpRequest, LoginRequest, VerifyOTPRequest, CompleteProfileRequest,
-    UserResponse, AuthResponse, RefreshTokenRequest, ResetPasswordRequest, MessageResponse,
-    OAuthSignInRequest, OAuthUrlResponse
-)
+from .deps import get_current_user, security, HTTPAuthorizationCredentials
+from .schemas import SignUpRequest, LoginRequest, VerifyOTPRequest, CompleteProfileRequest, UserResponse, AuthResponse, RefreshTokenRequest, ResetPasswordRequest, MessageResponse, OAuthSignInRequest, OAuthUrlResponse
 
 auth_router = APIRouter(prefix = "/auth", tags=["auth"])
 
@@ -73,7 +70,6 @@ def complete_profile(request: CompleteProfileRequest, credentials: HTTPAuthoriza
     token = credentials.credentials
     user_metadata = {
         "display_name": request.display_name,
-        "name": request.display_name,
         "phone": request.phone,
         "is_otp_verified": True
     }     
@@ -81,8 +77,6 @@ def complete_profile(request: CompleteProfileRequest, credentials: HTTPAuthoriza
     update_attrs = {"data": user_metadata}
     if request.phone:
         phone_val = request.phone.strip()
-        if not phone_val.startswith("+"):
-            phone_val = "+" + phone_val
         update_attrs["phone"] = phone_val
 
     try:
@@ -91,6 +85,17 @@ def complete_profile(request: CompleteProfileRequest, credentials: HTTPAuthoriza
         raw_res = supabase.auth._request("PUT", "user", jwt=token, body={"data": user_metadata})
 
     parsed = parse_user_response(raw_res)
+
+    user_data = {
+        "id": str(parsed.user.id),
+        "email": parsed.user.email,
+        "name": request.display_name,
+        "phone": update_attrs.get("phone", request.phone),
+    }
+    try:
+        create_user(user_data["id"],user_data["name"],user_data["phone"], user_data["email"])
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=f"Failed to insert user into users table: {str(err)}")
 
     return build_user_response(parsed.user)
 
@@ -139,12 +144,6 @@ def reset_password(body: ResetPasswordRequest):
 @auth_router.get("/me", response_model=UserResponse, summary="Get current user profile (Protecting Endpoints)")
 def get_me(current_user: UserResponse = Depends(get_current_user)):
     return current_user
-
-
-@auth_router.get("/dashboard", response_model=UserResponse, summary="Protected user dashboard after login")
-def dashboard(current_user: UserResponse = Depends(get_current_user)):
-    return current_user
-
 
 @auth_router.post("/oauth/url", response_model=OAuthUrlResponse, summary="Generate OAuth authorization URL for sign-up/login")
 def get_oauth_url(body: OAuthSignInRequest):

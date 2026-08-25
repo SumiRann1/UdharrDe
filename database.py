@@ -21,13 +21,14 @@ except:
 
 #USERS
 
-def create_user(user_uid, name, phone):
+def create_user(user_uid, name, phone, email=None):
     now = datetime.now().strftime("%b-%d-%Y %H:%M:%S")
 
     try:
         user_data={
             "id": user_uid,
             "name": name,
+            "email": email,
             "phone": phone,
             "friends": [],
             "in_grp": [],
@@ -66,12 +67,3 @@ def add_friends(uid1, uid2):
 
 
 #GROUPS
-
-
-
-
-
-
-
-#----------------------------------------------------------------------------------------
-# create_user("a3c8e5f2-9842-4b2e-a579-24d62b661d98", "Vedant", "1234567890")
