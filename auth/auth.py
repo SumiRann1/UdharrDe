@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from typing import Optional
+from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi.responses import RedirectResponse
 from auth.client import supabase
 from supabase_auth._sync.gotrue_client import parse_user_response
 from auth.deps import get_current_user, security, HTTPAuthorizationCredentials
-from auth.schemas import SignUpRequest, LoginRequest, VerifyOTPRequest, CompleteProfileRequest, UserResponse, AuthResponse,RefreshTokenRequest, ResetPasswordRequest, MessageResponse
+from auth.schemas import (
+    SignUpRequest, LoginRequest, VerifyOTPRequest, CompleteProfileRequest,
+    UserResponse, AuthResponse, RefreshTokenRequest, ResetPasswordRequest, MessageResponse,
+    OAuthSignInRequest, OAuthUrlResponse
+)
 
 auth_router = APIRouter(prefix = "/auth", tags=["auth"])
 
@@ -138,3 +144,71 @@ def get_me(current_user: UserResponse = Depends(get_current_user)):
 @auth_router.get("/dashboard", response_model=UserResponse, summary="Protected user dashboard after login")
 def dashboard(current_user: UserResponse = Depends(get_current_user)):
     return current_user
+
+
+@auth_router.post("/oauth/url", response_model=OAuthUrlResponse, summary="Generate OAuth authorization URL for sign-up/login")
+def get_oauth_url(body: OAuthSignInRequest):
+    try:
+        options = {}
+        if body.redirect_to:
+            options["redirect_to"] = body.redirect_to
+
+        res = supabase.auth.sign_in_with_oauth({
+            "provider": body.provider,
+            "options": options
+        })
+        return OAuthUrlResponse(url=res.url, provider=res.provider)
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+
+@auth_router.get("/oauth/authorize", summary="Browser redirect to OAuth Provider authorization URL")
+def authorize_oauth(
+    provider: str = Query(..., description="OAuth provider, e.g. 'google', 'github', 'discord'"),
+    redirect_to: Optional[str] = Query(None, description="Optional custom redirect URL after OAuth authentication")
+):
+    try:
+        options = {}
+        if redirect_to:
+            options["redirect_to"] = redirect_to
+
+        res = supabase.auth.sign_in_with_oauth({
+            "provider": provider,
+            "options": options
+        })
+        return RedirectResponse(url=res.url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err))
+
+
+@auth_router.get("/callback", response_model=AuthResponse, summary="Handle OAuth authorization code callback from Supabase")
+def oauth_callback(
+    code: Optional[str] = Query(None, description="Authorization code returned by Supabase OAuth redirect"),
+    error: Optional[str] = Query(None, description="Error code if OAuth failed"),
+    error_description: Optional[str] = Query(None, description="Error description if OAuth failed"),
+    redirect_to: Optional[str] = Query(None, description="Original redirect URL if needed for PKCE exchange")
+):
+    """
+    Callback endpoint that exchanges the authorization `code` received from Supabase/OAuth provider for a session.
+    """
+    if error or error_description:
+        raise HTTPException(status_code=400, detail=error_description or error or "OAuth authentication failed")
+
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing required 'code' parameter in callback")
+
+    try:
+        exchange_params = {"auth_code": code}
+        if redirect_to:
+            exchange_params["redirect_to"] = redirect_to
+
+        res = supabase.auth.exchange_code_for_session(exchange_params)
+        
+        return AuthResponse(
+            access_token=res.session.access_token,
+            refresh_token=res.session.refresh_token,
+            token_type=res.session.token_type or "bearer",
+            user=build_user_response(res.user),
+        )
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err))
