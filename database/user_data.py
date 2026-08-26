@@ -1,22 +1,5 @@
-import os
 from datetime import datetime
-from dotenv import load_dotenv
-from supabase import create_client, Client
-
-load_dotenv()
-
-try:
-    SUPABASE_URL=os.getenv("SUPABASE_URL")
-    SUPABASE_KEY=os.getenv("SUPABASE_KEY")
-    if SUPABASE_KEY and SUPABASE_URL:
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("Supabase connected")
-    else:
-        supabase=None
-        print("Supabase not connected")
-except:
-    supabase=None
-    print("supabase not found")
+from .client import supabase
 
 #USERS
 

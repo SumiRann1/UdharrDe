@@ -1,8 +1,8 @@
 from typing import Optional
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from fastapi.responses import RedirectResponse
-from .client import supabase
-from database import create_user
+from database.client import supabase
+from database.user_data import create_user
 from supabase_auth._sync.gotrue_client import parse_user_response
 from .deps import get_current_user, security, HTTPAuthorizationCredentials
 from .schemas import SignUpRequest, LoginRequest, VerifyOTPRequest, CompleteProfileRequest, UserResponse, AuthResponse, RefreshTokenRequest, ResetPasswordRequest, MessageResponse, OAuthSignInRequest, OAuthUrlResponse
