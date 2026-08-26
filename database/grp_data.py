@@ -1,0 +1,55 @@
+import os
+from datetime import datetime
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+
+try:
+    SUPABASE_URL=os.getenv("SUPABASE_URL")
+    SUPABASE_KEY=os.getenv("SUPABASE_KEY")
+    if SUPABASE_KEY and SUPABASE_URL:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("Supabase connected")
+    else:
+        supabase=None
+        print("Supabase not connected")
+except:
+    supabase=None
+    print("supabase not found")
+
+#GROUPS
+def create_grp(name, creator_uid):
+    # group create karne ke liye group name decide karna padega and then supabase khud ek uid allot kar dega
+    # creator_uid tokens se lenge as current user uid de dega
+    try:
+        grp_data={
+            "name": name,
+            "created_by": creator_uid,
+            "members": [creator_uid]
+        }
+        supabase.table("groups").insert(grp_data).execute()
+        print("group created")
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
+def add_mem(grp_name, arr_name):
+    #member uids ka ek list pass hoga jispe iterate karke group members me user uids add karnge
+
+    # remember: abhi users.in_grp me grp uids nahi ja rahi wo bhejna hai for each user
+
+    try:
+        response=supabase.table("groups").select("members").eq("name", grp_name).single().execute()
+        mem_list=response.data["members"]
+        for items in arr_name:
+            if items not in mem_list:
+                mem_list.append(items)
+                print(f"{items} added")
+            else:
+                print(f"{items} already in grp")
+        supabase.table("groups").update({"members": mem_list}).eq("name", grp_name).execute()
+        print(f"users added {arr_name} in grp {grp_name}")
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
