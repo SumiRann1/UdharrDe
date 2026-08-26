@@ -1,5 +1,5 @@
 from datetime import datetime
-from .client import supabase
+from client import supabase
 
 #USERS
 
@@ -45,10 +45,36 @@ def update_user(uid, new_name=False, new_phone=False):
 def get_user_by_id(uid):
     # current user ka data extract karne ke liye use karenge
     # same last time jaise tokens se uid leke apan current user uid pass karenge
-    response= supabase.table("users").select("*").eq("id", uid).single().execute()
-    if not response.data:
-        return None
-    return response.data
+    try:
+        response= supabase.table("users").select("*").eq("id", uid).single().execute()
+        if not response.data:
+            return ("User doesn't exist")
+        return response.data
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
+def get_user_by_name(name):
+    #user data denge when name is entered
+    try:
+        response= supabase.table("users").select("*").eq("name", name).single().execute()
+        if not response.data:
+            return ("User doesn't exist")
+        return response.data
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
+def get_user_by_mail(mail):
+    #user data denge when email is entered
+    try:
+        response= supabase.table("users").select("*").eq("email", mail).single().execute()
+        if not response.data:
+            return ("User doesn't exist")
+        return response.data
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
 
 def add_f_helper(uid1, uid2):
     # helper function friends ko mutually add karne ke liye
@@ -71,6 +97,9 @@ def add_friends(uid1, uid2):
         print(f"Error: e")
         raise e
 
+def rm_friends(uid1, uid2):
+    
+
 #-------------------
 # create_user
 # create_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "asdf", '9876543210', "mail@mail.com")
@@ -78,3 +107,8 @@ def add_friends(uid1, uid2):
 # update_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "qwerdf", '5432109876')
 #add_friends
 # add_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")
+print(get_user_by_id("6c1363ba-ae17-43e4-82e2-89894e651e89"))
+print("------------------")
+print(get_user_by_name("asdf"))
+print("------------------")
+print(get_user_by_mail("mail@mail.com"))
