@@ -1,7 +1,6 @@
 import os
 import sys
 
-from UdharrDe.FastAPI.router.group import groups
 
 FASTAPI_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(FASTAPI_DIR)
