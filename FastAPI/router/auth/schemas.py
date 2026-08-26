@@ -25,7 +25,7 @@ class VerifyOTPRequest(BaseModel):
 
 class CompleteProfileRequest(BaseModel):
     display_name: str = Field(..., min_length=3, description="Display name must be at least 3 characters")
-    phone: Optional[str] = Field(None, min_length=10, description="Phone number")
+    phone: str = Field(None, min_length=10, description="Phone number")
 
     @field_validator('phone')
     def validate_phone(cls, value):
@@ -66,4 +66,13 @@ class AuthResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+class OAuthSignInRequest(BaseModel):
+    provider: str = Field(..., description="OAuth provider, here Google")
+    redirect_to: Optional[str] = Field(None, description="Optional redirect URL after authenticating with provider")
+
+class OAuthUrlResponse(BaseModel):
+    url: str = Field(..., description="Authorization URL to redirect user's browser to")
+    provider: str = Field(..., description="OAuth provider name")
+
     
