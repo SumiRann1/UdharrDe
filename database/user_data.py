@@ -1,5 +1,5 @@
 from datetime import datetime
-from client import supabase
+from .client import supabase
 
 #USERS
 
@@ -76,16 +76,35 @@ def get_user_by_mail(mail):
         print(f"Error: {e}")
         raise e
 
+def is_friend(uid1, uid2):
+    response=(supabase.table("users").select("friends").eq("id",uid1).single().execute())
+    friends=response.data["friends"]
+    if uid2 in friends:
+        return True
+    else:
+        return False
+
 def add_f_helper(uid1, uid2):
     # helper function friends ko mutually add karne ke liye
     response=(supabase.table("users").select("friends").eq("id",uid1).single().execute())
     friends=response.data["friends"]
-    if uid2 not in friends:
+    if not is_friend(uid1, uid2):
         friends.append(uid2)
         supabase.table("users").update({"friends": friends}).eq("id", uid1).execute()
         print("friend added")
     else:
         print("friend already exists")
+
+def rm_f_helper(uid1, uid2):
+    # helper function friends ko mutually rm karne ke liye
+        response=(supabase.table("users").select("friends").eq("id",uid1).single().execute())
+        friends=response.data["friends"]
+        if is_friend(uid1, uid2):
+            friends.remove(uid2)
+            supabase.table("users").update({"friends": friends}).eq("id", uid1).execute()
+            print("friend removed")
+        else:
+            print("not friends")
 
 
 def add_friends(uid1, uid2):
@@ -98,7 +117,12 @@ def add_friends(uid1, uid2):
         raise e
 
 def rm_friends(uid1, uid2):
-    
+    try:
+        rm_f_helper(uid1, uid2)
+        rm_f_helper(uid2, uid1)
+    except Exception as e:
+        print(f"Error: e")
+        raise e
 
 #-------------------
 # create_user
@@ -107,8 +131,10 @@ def rm_friends(uid1, uid2):
 # update_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "qwerdf", '5432109876')
 #add_friends
 # add_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")
-print(get_user_by_id("6c1363ba-ae17-43e4-82e2-89894e651e89"))
-print("------------------")
-print(get_user_by_name("asdf"))
-print("------------------")
-print(get_user_by_mail("mail@mail.com"))
+# print(get_user_by_id("6c1363ba-ae17-43e4-82e2-89894e651e89"))
+# print("------------------")
+# print(get_user_by_name("asdf"))
+# print("------------------")
+# print(get_user_by_mail("mail@mail.com"))
+# print(is_friend("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89"))
+# rm_friends("7c1363ba-ae17-43e4-82e2-89894e651e89", "6c1363ba-ae17-43e4-82e2-89894e651e89")

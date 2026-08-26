@@ -1,4 +1,4 @@
-from client import supabase
+from .client import supabase
 from datetime import datetime
 
 #GROUPS
