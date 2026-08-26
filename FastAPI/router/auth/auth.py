@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from fastapi.responses import RedirectResponse
 from database.client import supabase
-from database.user_data import create_user
+from database.user_data import create_user, get_user_by_id
 from supabase_auth._sync.gotrue_client import parse_user_response
 from .deps import get_current_user, security, HTTPAuthorizationCredentials
 from .schemas import SignUpRequest, LoginRequest, VerifyOTPRequest, CompleteProfileRequest, UserResponse, AuthResponse, RefreshTokenRequest, ResetPasswordRequest, MessageResponse, OAuthSignInRequest, OAuthUrlResponse
@@ -93,9 +93,14 @@ def complete_profile(request: CompleteProfileRequest, credentials: HTTPAuthoriza
         "phone": update_attrs.get("phone", request.phone),
     }
     try:
-        create_user(user_data["id"],user_data["name"],user_data["phone"], user_data["email"])
+        existing_user = get_user_by_id(user_data["id"])
+        if not existing_user:
+            create_user(user_data["id"], user_data["name"], user_data["phone"], user_data["email"])
+        else:
+            from database.user_data import update_user
+            update_user(user_data["id"], new_name=user_data["name"], new_phone=user_data["phone"])
     except Exception as err:
-        raise HTTPException(status_code=400, detail=f"Failed to insert user into users table: {str(err)}")
+        raise HTTPException(status_code=400, detail=f"Failed to register/update user in database table: {str(err)}")
 
     return build_user_response(parsed.user)
 
@@ -180,21 +185,18 @@ def authorize_oauth(
         raise HTTPException(status_code=400, detail=str(err))
 
 
-@auth_router.get("/callback", response_model=AuthResponse, summary="Handle OAuth authorization code callback from Supabase")
+@auth_router.get("/callback", summary="Handle OAuth authorization code callback from Supabase")
 def oauth_callback(
-    code: Optional[str] = Query(None, description="Authorization code returned by Supabase OAuth redirect"),
-    error: Optional[str] = Query(None, description="Error code if OAuth failed"),
-    error_description: Optional[str] = Query(None, description="Error description if OAuth failed"),
-    redirect_to: Optional[str] = Query(None, description="Original redirect URL if needed for PKCE exchange")
+    code: Optional[str] = Query(None),
+    error: Optional[str] = Query(None),
+    error_description: Optional[str] = Query(None),
+    redirect_to: Optional[str] = Query(None)
 ):
-    """
-    Callback endpoint that exchanges the authorization `code` received from Supabase/OAuth provider for a session.
-    """
     if error or error_description:
-        raise HTTPException(status_code=400, detail=error_description or error or "OAuth authentication failed")
+        raise HTTPException(status_code=400, detail=error_description or error)
 
     if not code:
-        raise HTTPException(status_code=400, detail="Missing required 'code' parameter in callback")
+        raise HTTPException(status_code=400, detail="Missing required 'code' parameter")
 
     try:
         exchange_params = {"auth_code": code}
@@ -202,7 +204,18 @@ def oauth_callback(
             exchange_params["redirect_to"] = redirect_to
 
         res = supabase.auth.exchange_code_for_session(exchange_params)
-        
+
+        # If custom redirect_to URL is specified (e.g. udharde://auth-callback for mobile)
+        if redirect_to:
+            sep = "&" if "?" in redirect_to else "?"
+            redirect_url = (
+                f"{redirect_to}{sep}"
+                f"access_token={res.session.access_token}"
+                f"&refresh_token={res.session.refresh_token}"
+            )
+            return RedirectResponse(url=redirect_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+        # Default for web fetch calls (returns JSON AuthResponse for web clients like ui.html)
         return AuthResponse(
             access_token=res.session.access_token,
             refresh_token=res.session.refresh_token,

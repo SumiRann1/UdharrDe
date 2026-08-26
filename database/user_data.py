@@ -31,12 +31,16 @@ def update_user(uid, new_name=False, new_phone=False):
     # ye uid use karke user name and phone ko change kar sakta hai
     # current user ka uid front end tokens se aiga mostly
     try:
-        response= supabase.table("users").select("*").eq("id", uid).single().execute()
+        response = supabase.table("users").select("*").eq("id", uid).execute()
+        if not response.data or len(response.data) == 0:
+            print("User not found for update")
+            return
+        curr_data = response.data[0]
         if not new_name:
-            new_name=response.data["name"]
+            new_name = curr_data["name"]
         if not new_phone:
-            new_phone=response.data["phone"]
-        supabase.table("users").update({"name":new_name, "phone": new_phone}).eq("id", uid).execute()
+            new_phone = curr_data["phone"]
+        supabase.table("users").update({"name": new_name, "phone": new_phone}).eq("id", uid).execute()
         print("user data updated")
     except Exception as e:
         print(f"Error: {e}")
@@ -45,10 +49,14 @@ def update_user(uid, new_name=False, new_phone=False):
 def get_user_by_id(uid):
     # current user ka data extract karne ke liye use karenge
     # same last time jaise tokens se uid leke apan current user uid pass karenge
-    response= supabase.table("users").select("*").eq("id", uid).single().execute()
-    if not response.data:
+    try:
+        response = supabase.table("users").select("*").eq("id", uid).execute()
+        if response.data and len(response.data) > 0:
+            return response.data[0]
         return None
-    return response.data
+    except Exception as e:
+        print(f"Error fetching user by id {uid}: {e}")
+        return None
 
 def add_f_helper(uid1, uid2):
     # helper function friends ko mutually add karne ke liye
