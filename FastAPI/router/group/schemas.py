@@ -13,12 +13,13 @@ class addMember(BaseModel):
 
 # ---------- COMMON RESPONSE SCHEMA ----------
 
-class createGroupSchema(BaseModel):
-    message: str
-    groupName: str
+# class createGroupSchema(BaseModel):
+#     message: str
+#     groupName: str
 
 
-class addMember(BaseModel):
-    message: str
-    groupName: str
-    listMembers: list[str]
+# class addMember(BaseModel):
+#     message: str
+#     groupName: str
+#     listMembers: list[str]
+

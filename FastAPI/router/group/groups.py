@@ -13,7 +13,7 @@ def create_group(groupData: createGroupSchema):
         return {"error": "Group name is required"}
     if not groupData.creator_uid:
         return {"error": "No such user exists"}
-    create_grp(groupData.groupName, groupData.creator_uid)
+    create_grp(groupData.groupName, str(groupData.creator_uid))
     return {"message": f"Group '{groupData.groupName}' created by user"}
 
 @groups.post("/add_member")
@@ -29,9 +29,11 @@ def add_member(groupData: addMember):
             dataMembers = get_user_by_name(member)
         except Exception as e:
             return {"error": f"Error retrieving user '{member}': {str(e)}"}
-        membersUuid.append(dataMembers[id])
+        membersUuid.append(dataMembers["id"])
     add_mem(groupData.groupName, membersUuid)
     return {"message": f"Group '{groupData.groupName}' created with members: {groupData.listMembers}"}
+
+
 
 
 
