@@ -1,6 +1,6 @@
 from datetime import datetime
 from .client import supabase #.removed before client for local checking
-from grp_data import grp_info_by_id
+from database.grp_data import grp_info_by_id
 
 #USERS
 
@@ -139,7 +139,7 @@ def get_user_grps(uid):
 #-------------------
 # create_user
 # create_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "asdf", '9876543210', "mail@mail.com")
-# update_user
+# update_user.
 # update_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "qwerdf", '5432109876')
 #add_friends
 # add_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")

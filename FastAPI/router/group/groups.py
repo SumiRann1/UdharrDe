@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
-from .schemas import (addMember,createGroupSchema)
-from database.grp_data import (add_mem , create_grp)
-from database.user_data import (get_user_by_name)
+from .schemas import (addMember,createGroupSchema, getGroupsSchema)
+from database.grp_data import (add_mem , create_grp, grp_info_by_id)
+from database.user_data import (get_user_by_name,  get_user_grps)
 
 
 groups= APIRouter(prefix="/groups", tags=["groups"])
@@ -33,8 +33,15 @@ def add_member(groupData: addMember):
     add_mem(groupData.groupName, membersUuid)
     return {"message": f"Group '{groupData.groupName}' created with members: {groupData.listMembers}"}
 
-
-
+@groups.post("/get_groups")
+def get_groups(groupData: getGroupsSchema):
+    '''this gives all the data of the groups that a user is a part of'''
+    grpUuids = get_user_grps(groupData.userUdid)
+    allGroupData = []
+    for grpUuid in grpUuids:
+        grpData = grp_info_by_id(grpUuid)
+        allGroupData.append(grpData)
+    return allGroupData
 
 
 

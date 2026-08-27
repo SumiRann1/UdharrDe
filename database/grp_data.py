@@ -1,4 +1,4 @@
-from client import supabase #.removed before client for local checking
+from .client import supabase #.removed before client for local checking
 from datetime import datetime
 
 #GROUPS
