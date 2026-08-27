@@ -1,5 +1,6 @@
 from datetime import datetime
-from .client import supabase
+from client import supabase #.removed before client for local checking
+from grp_data import grp_info_by_id
 
 #USERS
 
@@ -50,8 +51,8 @@ def get_user_by_id(uid):
     # current user ka data extract karne ke liye use karenge
     # same last time jaise tokens se uid leke apan current user uid pass karenge
     try:
-       response = supabase.table("users").select("*").eq("id", uid).execute()
-       if response.data and len(response.data) > 0:
+        response = supabase.table("users").select("*").eq("id", uid).execute()
+        if response.data and len(response.data) > 0:
             return response.data[0]
         return None
     except Exception as e:
@@ -110,7 +111,6 @@ def rm_f_helper(uid1, uid2):
         else:
             print("not friends")
 
-
 def add_friends(uid1, uid2):
     # helper funct use karke both side relation form karke apan friends list me add kar denge
     try:
@@ -128,6 +128,14 @@ def rm_friends(uid1, uid2):
         print(f"Error: e")
         raise e
 
+def get_user_grps(uid):
+    try:
+        response=supabase.table("users").select("in_grp").eq("id", uid).execute()
+        return response.data[0]["in_grp"]
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
 #-------------------
 # create_user
 # create_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "asdf", '9876543210', "mail@mail.com")
@@ -142,3 +150,6 @@ def rm_friends(uid1, uid2):
 # print(get_user_by_mail("mail@mail.com"))
 # print(is_friend("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89"))
 # rm_friends("7c1363ba-ae17-43e4-82e2-89894e651e89", "6c1363ba-ae17-43e4-82e2-89894e651e89")
+# rm_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")
+# hello=(get_user_grps("6c1363ba-ae17-43e4-82e2-89894e651e89"))
+# print(grp_info_by_id(hello[0]))
