@@ -162,3 +162,4 @@ def get_user_grps(uid):
 # hello=(get_user_grps("6c1363ba-ae17-43e4-82e2-89894e651e89"))
 # print(grp_info_by_id(hello[0]))
 # print(get_user_by_id_list(["564bc79e-705f-440a-8adc-48787d37ab79", "6c1363ba-ae17-43e4-82e2-89894e651e89"]))
+# print(get_user_by_id_list(["564bc79e-705f-440a-8adc-48787d37ab79", "6c1363ba-ae17-43e4-82e2-89894e651e89"]))
