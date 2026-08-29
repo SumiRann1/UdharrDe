@@ -119,3 +119,4 @@ def rm_member(grp_name, uid):
 # print(grpid_by_name("group1"))
 # add_mem("group1", ["7c1363ba-ae17-43e4-82e2-89894e651e89"])
 # rm_member("group1", "7c1363ba-ae17-43e4-82e2-89894e651e89")
+# rm_member("group1", "7c1363ba-ae17-43e4-82e2-89894e651e89")
