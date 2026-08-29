@@ -23,3 +23,6 @@ class addMember(BaseModel):
 #     groupName: str
 #     listMembers: list[str]
 
+
+class getGroupsSchema(BaseModel):
+    userUdid : UUID
