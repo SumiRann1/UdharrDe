@@ -5,8 +5,6 @@ from router.auth.deps import get_current_user
 from router.auth.schemas import UserResponse
 from .schemas import DashboardResponse, UpdateProfileRequest, GroupResponse
 import uuid
-import logging
-logger = logging.getLogger(__name__)
 
 home = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
