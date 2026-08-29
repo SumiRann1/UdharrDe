@@ -36,3 +36,28 @@ def add_mem(grp_name, arr_name):
     except Exception as e:
         print(f"Error: {e}")
         raise e
+
+
+
+
+#######################
+def get_group_by_id(id):
+    try:
+        response=supabase.table("groups").select("*").eq("id", id).execute()
+        if not response.data:
+            raise Exception("Group not found")
+        return response.data[0]
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
+def get_groupnames_from_ids(ids):
+    try:
+        if not ids:
+            return {}
+        str_ids = [str(i) for i in ids]
+        response = supabase.table("groups").select("id", "name").in_("id", str_ids).execute()
+        return {str(row["id"]): row["name"] for row in response.data}
+    except Exception as e:
+        print(f"Error fetching group names by ids: {e}")
+        return {}

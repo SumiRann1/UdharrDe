@@ -86,3 +86,17 @@ def add_friends(uid1, uid2):
 # update_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "qwerdf", '5432109876')
 #add_friends
 # add_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")
+
+
+
+############################
+def get_users_from_ids(ids):
+    try:
+        if not ids:
+            return {}
+        str_ids = [str(i) for i in ids]
+        response = supabase.table("users").select("id", "name").in_("id", str_ids).execute()
+        return {str(row["id"]): row["name"] for row in response.data}
+    except Exception as e:
+        print(f"Error fetching users by ids: {e}")
+        return {}
