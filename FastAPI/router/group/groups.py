@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter
 from .schemas import (addMember,createGroupSchema, getGroupsSchema)
 from database.grp_data import (add_mem , create_grp, grp_info_by_id)
 from database.user_data import (get_user_by_name,  get_user_grps)
+from fastapi import HTTPException
 
 
 groups= APIRouter(prefix="/groups", tags=["groups"])
@@ -10,28 +11,28 @@ groups= APIRouter(prefix="/groups", tags=["groups"])
 def create_group(groupData: createGroupSchema):
     ''' This function takes the group name and creator's user ID from the request body and creates a new group'''
     if not groupData.groupName:
-        return {"error": "Group name is required"}
+        raise HTTPException(status_code=400, detail="Group name is required")
     if not groupData.creator_uid:
-        return {"error": "No such user exists"}
+        raise HTTPException(status_code=400, detail="Creator user ID is required")
     create_grp(groupData.groupName, str(groupData.creator_uid))
-    return {"message": f"Group '{groupData.groupName}' created by user"}
+    raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created successfully")
 
 @groups.post("/add_member")
 def add_member(groupData: addMember):
     ''' This function takes the group name and list of members from the request body and creates a new group.'''
     if not groupData.groupName:
-        return {"error": "Group name is required"}
+        raise HTTPException(status_code=400, detail="Group name is required")
     if not groupData.listMembers:
-        return {"error": "List of members is required"}
+        raise HTTPException(status_code=400, detail="List of members is required")
     membersUuid=[]
     for member in groupData.listMembers:
         try:
             dataMembers = get_user_by_name(member)
         except Exception as e:
-            return {"error": f"Error retrieving user '{member}': {str(e)}"}
+            raise HTTPException(status_code=400, detail=f"Error retrieving user '{member}': {str(e)}")
         membersUuid.append(dataMembers["id"])
     add_mem(groupData.groupName, membersUuid)
-    return {"message": f"Group '{groupData.groupName}' created with members: {groupData.listMembers}"}
+    raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created with members: {groupData.listMembers}")
 
 @groups.post("/get_groups")
 def get_groups(groupData: getGroupsSchema):
@@ -41,9 +42,10 @@ def get_groups(groupData: getGroupsSchema):
     for grpUuid in grpUuids:
         grpData = grp_info_by_id(grpUuid)
         allGroupData.append(grpData)
-    return allGroupData
-
-
+    return {
+    "message": f"Groups for user '{groupData.userUdid}'",
+    "groups": allGroupData
+    }
 
 
 
