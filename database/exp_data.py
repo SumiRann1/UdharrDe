@@ -1,4 +1,4 @@
-from client import supabase #.removed before client for local checking
+from .client import supabase #.removed before client for local checking
 
 def create_exp_user(name: str, p_uid: str, amt: float, u_uid: str, comment=None):
     try:

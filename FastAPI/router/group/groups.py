@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
-from .schemas import (addMember,createGroupSchema, getGroupsSchema)
-from database.grp_data import (add_mem , create_grp, grp_info_by_id)
+from .schemas import (addMember,createGroupSchema, getGroupsSchema, removeMember)
+from database.grp_data import (add_mem , create_grp, grp_info_by_id,rm_member)
 from database.user_data import (get_user_by_name,  get_user_grps)
 from fastapi import HTTPException
 
@@ -17,23 +17,6 @@ def create_group(groupData: createGroupSchema):
     create_grp(groupData.groupName, str(groupData.creator_uid))
     raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created successfully")
 
-@groups.post("/add_member")
-def add_member(groupData: addMember):
-    ''' This function takes the group name and list of members from the request body and creates a new group.'''
-    if not groupData.groupName:
-        raise HTTPException(status_code=400, detail="Group name is required")
-    if not groupData.listMembers:
-        raise HTTPException(status_code=400, detail="List of members is required")
-    membersUuid=[]
-    for member in groupData.listMembers:
-        try:
-            dataMembers = get_user_by_name(member)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Error retrieving user '{member}': {str(e)}")
-        membersUuid.append(dataMembers["id"])
-    add_mem(groupData.groupName, membersUuid)
-    raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created with members: {groupData.listMembers}")
-
 @groups.post("/get_groups")
 def get_groups(groupData: getGroupsSchema):
     '''this gives all the data of the groups that a user is a part of'''
@@ -47,6 +30,40 @@ def get_groups(groupData: getGroupsSchema):
     "groups": allGroupData
     }
 
+@groups.post("/add_member")
+def add_member(groupData: addMember):
+    ''' This function takes the group name and list of members by name from the request body and creates a new group.'''
+    if not groupData.groupName:
+        raise HTTPException(status_code=400, detail="Group name is required")
+    if not groupData.listMembers:
+        raise HTTPException(status_code=400, detail="List of members is required")
+    membersUuid=[]
+    for member in groupData.listMembers:
+        try:
+            dataMembers = get_user_by_name(member)
+            membersUuid.append(dataMembers["id"])
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error retrieving user '{member}': {str(e)}")
+    add_mem(groupData.groupName, membersUuid)
+    raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created with members: {groupData.listMembers}")
+
+@groups.post("/rm_member")
+def remove_member(groupData:removeMember):
+    '''This functions is used to remove a member for this it will need the name of the group and a list of members by name '''
+    if not groupData.groupName:
+            raise HTTPException(status_code=400, detail="Group name is required")
+    if not groupData.listMembers:
+        raise HTTPException(status_code=400, detail="List of members is required")
+    membersUuid=[]
+    for member in groupData.listMembers:
+        try:
+            dataMembers = get_user_by_name(member)
+            membersUuid.append(dataMembers["id"])
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error retrieving user '{member}': {str(e)}")
+    rm_member(groupData.groupName, membersUuid)
+    raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created with members: {groupData.listMembers}")
+    
 
 
 

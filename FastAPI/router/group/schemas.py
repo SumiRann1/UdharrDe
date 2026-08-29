@@ -11,6 +11,11 @@ class addMember(BaseModel):
     groupName: str
     listMembers: list[str]
 
+class removeMember(BaseModel):
+    groupName: str
+    listMembers: list[str]
+
+
 # ---------- COMMON RESPONSE SCHEMA ----------
 
 # class createGroupSchema(BaseModel):
