@@ -1,4 +1,4 @@
-from .client import supabase #.removed before client for local checking
+from client import supabase #.removed before client for local checking
 from datetime import datetime
 
 #GROUPS
@@ -32,6 +32,14 @@ def grp_info_by_id(gid):
     try:
         response=supabase.table("groups").select("*").eq("id", gid).execute()
         return response.data[0]
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
+def get_grp_by_id_list(list_uid: list)-> dict:
+    try:
+        response=supabase.table("groups").select("id", "name").in_("id", list_uid).execute()
+        return response.data
     except Exception as e:
         print(f"Error: {e}")
         raise e
@@ -110,3 +118,4 @@ def rm_member(grp_name, uid):
 # create_grp("group1", "6c1363ba-ae17-43e4-82e2-89894e651e89")
 # print(grpid_by_name("group1"))
 # add_mem("group1", ["7c1363ba-ae17-43e4-82e2-89894e651e89"])
+# rm_member("group1", "7c1363ba-ae17-43e4-82e2-89894e651e89")

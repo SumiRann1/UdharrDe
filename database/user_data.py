@@ -1,6 +1,6 @@
 from datetime import datetime
-from .client import supabase #.removed before client for local checking
-from database.grp_data import grp_info_by_id
+from client import supabase #.removed before client for local checking
+from grp_data import grp_info_by_id
 
 #USERS
 
@@ -58,6 +58,14 @@ def get_user_by_id(uid):
     except Exception as e:
         print(f"Error fetching user by id {uid}: {e}")
         return None
+
+def get_user_by_id_list(list_uid: list)-> dict:
+    try:
+        response=supabase.table("users").select("id", "name").in_("id", list_uid).execute()
+        return response.data
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
 
 def get_user_by_name(name):
     #user data denge when name is entered
@@ -139,7 +147,7 @@ def get_user_grps(uid):
 #-------------------
 # create_user
 # create_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "asdf", '9876543210', "mail@mail.com")
-# update_user.
+# update_user
 # update_user("6c1363ba-ae17-43e4-82e2-89894e651e89", "qwerdf", '5432109876')
 #add_friends
 # add_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")
@@ -153,3 +161,4 @@ def get_user_grps(uid):
 # rm_friends("6c1363ba-ae17-43e4-82e2-89894e651e89", "7c1363ba-ae17-43e4-82e2-89894e651e89")
 # hello=(get_user_grps("6c1363ba-ae17-43e4-82e2-89894e651e89"))
 # print(grp_info_by_id(hello[0]))
+# print(get_user_by_id_list(["564bc79e-705f-440a-8adc-48787d37ab79", "6c1363ba-ae17-43e4-82e2-89894e651e89"]))
