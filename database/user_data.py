@@ -1,6 +1,5 @@
 from datetime import datetime
-from client import supabase #.removed before client for local checking
-from grp_data import grp_info_by_id
+from .client import supabase #.removed before client for local checking
 
 #USERS
 
