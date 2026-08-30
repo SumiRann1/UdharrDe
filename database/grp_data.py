@@ -1,4 +1,4 @@
-from client import supabase #.removed before client for local checking
+from .client import supabase #.removed before client for local checking
 from datetime import datetime
 
 #GROUPS
@@ -18,13 +18,13 @@ def create_grp(name, creator_uid):
         print(f"Error: {e}")
         raise e
 
-def grpid_by_name(name):
-    try:
-        response=supabase.table("groups").select("*").eq("name", name).single().execute()
-        return response.data["id"]
-    except Exception as e:
-        print(f"Error: {e}")
-        raise e
+# def grpid_by_name(name):
+#     try:
+#         response=supabase.table("groups").select("*").eq("name", name).single().execute()
+#         return response.data["id"]
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         raise e
 
 def grp_info_by_id(gid):
     '''get all grp info using grp id
@@ -94,19 +94,27 @@ def add_mem(grp_name, arr_name):
         print(f"Error: {e}")
         raise e
 
-def rm_member(grp_name, uid):
+
+def rm_member(grp_name, arr_name):
     try:
         response=supabase.table("groups").select("members", "id").eq("name", grp_name).execute()
         mem_list=response.data[0]["members"]
         grp_id=response.data[0]["id"]
-        rm_in_grp(uid, grp_id)
-        if(uid in mem_list):
-            mem_list.remove(uid)
-            print(f"user {uid} removed from grp {grp_name}")
-        else:
-            print(f"user {uid} not in grp {grp_name}")
+        for items in arr_name:
+            rm_in_grp(str(items), grp_id)
+            if items in mem_list:
+                mem_list.remove(items)
+                print(f"user {items} removed from grp {grp_name}")
+            else:
+                print(f"{items} already in grp")
+        # rm_in_grp(uid, grp_id)
+        # if(uid in mem_list):
+        #     mem_list.remove(uid)
+        #     print(f"user {uid} removed from grp {grp_name}")
+        # else:
+        #     print(f"user {uid} not in grp {grp_name}")
         supabase.table("groups").update({"members": mem_list}).eq("name", grp_name).execute()
-        print(f"user {uid} removed from grp {grp_name}")
+        print(f"user {arr_name} removed from grp {grp_name}")
     except Exception as e:
         print(f"Error: {e}")
         raise e
