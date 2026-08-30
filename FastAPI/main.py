@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from router.auth.auth import auth_router
 from router.dashboard.home import home as dashboard_router
+from router.payments.pay import payments as payments_router
 
 app = FastAPI(title="UdharrDe")
 
@@ -36,6 +37,7 @@ if os.path.exists(static_dir):
 
 app.include_router(auth_router)
 app.include_router(dashboard_router)
+app.include_router(payments_router)
 
 @app.get("/")
 def read_root():

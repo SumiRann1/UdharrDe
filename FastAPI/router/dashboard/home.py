@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from database.user_data import get_user_by_id, update_user, get_users_from_ids
-from database.grp_data import get_group_by_id, get_groupnames_from_ids
+from database.user_data import get_user_by_id, update_user, get_user_by_id_list
+from database.grp_data import get_grp_by_id_list, grp_info_by_id
 from router.auth.deps import get_current_user
 from router.auth.schemas import UserResponse
 from .schemas import DashboardResponse, UpdateProfileRequest, GroupResponse
@@ -13,8 +13,8 @@ def format_user_dashboard(user: dict) -> dict:
     groups_list = user.get("in_grp") or []
     exp_dict = user.get("exp_frnd") or {}
 
-    user_map = get_users_from_ids(friends_list + list(exp_dict.keys()))
-    group_map = get_groupnames_from_ids(groups_list)
+    user_map = {user["id"]: user["name"] for user in get_user_by_id_list(friends_list + list(exp_dict.keys()))}
+    group_map = {group["id"]: group["name"] for group in get_grp_by_id_list(groups_list)}
 
     user_copy = dict(user)
     user_copy["friends"] = [{"id": f, "name": user_map.get(str(f), "User")} for f in friends_list]
@@ -49,17 +49,21 @@ def get_friend_transactions(id: uuid.UUID, current_user: UserResponse = Depends(
 
 @home.get("/groups/{id}", response_model=GroupResponse)
 def get_group_transactions(id: uuid.UUID, current_user: UserResponse = Depends(get_current_user)):
-    group = get_group_by_id(id)
+    try:
+        group = grp_info_by_id(str(id))
+    except Exception:
+        group = None
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
 
     members_list = group.get("members") or []
     created_by_id = str(group.get("created_by") or "")
     
-    user_map = get_users_from_ids(members_list + ([created_by_id] if created_by_id else []))
+    user_map = {user["id"]: user["name"] for user in get_user_by_id_list(members_list + ([created_by_id] if created_by_id else []))}
     
     group_copy = dict(group)
     group_copy["members"] = [{"id": m, "name": user_map.get(str(m), "User")} for m in members_list]
     group_copy["created_by_name"] = user_map.get(created_by_id, "User")
     
     return GroupResponse(**group_copy)
+
