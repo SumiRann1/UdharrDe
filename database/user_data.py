@@ -1,5 +1,5 @@
 from datetime import datetime
-from client import supabase #.removed before client for local checking
+from .client import supabase #.removed before client for local checking
 
 #USERS
 
