@@ -16,6 +16,7 @@ from router.auth.auth import auth_router
 from router.dashboard.home import home as dashboard_router
 from router.payments.pay import payments as payments_router
 from router.group.groups import groups as group_router
+from router.friends.friends import friends as friends_router
 
 app = FastAPI(title="UdharrDe")
 
@@ -41,6 +42,7 @@ app.include_router(auth_router)
 app.include_router(dashboard_router)
 app.include_router(payments_router)
 app.include_router(group_router)
+app.include_router(friends_router)
 
 @app.get("/")
 def read_root():

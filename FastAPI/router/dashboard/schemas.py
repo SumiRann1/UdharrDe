@@ -29,3 +29,14 @@ class GroupResponse(BaseModel):
     created_at: str
     created_by: uuid.UUID
     created_by_name: str = ""
+
+class FriendDashboardResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    phone: str
+    email: str
+    tot_owe: int
+    tot_lend: int
+    balance: int
+    created_at: str
+    activities : List[Any]
