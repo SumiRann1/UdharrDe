@@ -40,3 +40,16 @@ class FriendDashboardResponse(BaseModel):
     balance: int
     created_at: str
     activities : List[Any]
+
+class GroupDashboardResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    members: List[Dict[str, Any]]
+    created_by: uuid.UUID
+    created_by_name: str = ""
+    tot_owe: int
+    tot_lend: int
+    balance: int
+    created_at: str
+    activities: List[Any]
+

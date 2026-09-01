@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter
-from .schemas import (addMember,createGroupSchema, getGroupsSchema, removeMember)
+from .schemas import (addMember,createGroupSchema, getGroupsSchema, removeMember, getGroupsResponse)
 from database.grp_data import (add_mem , create_grp, grp_info_by_id,rm_member)
 from database.user_data import (get_user_by_name,  get_user_grps)
 from fastapi import HTTPException
@@ -17,7 +17,7 @@ def create_group(groupData: createGroupSchema):
     create_grp(groupData.groupName, str(groupData.creator_uid))
     raise HTTPException(status_code=200, detail=f"Group '{groupData.groupName}' created successfully")
 
-@groups.post("/get_groups")
+@groups.post("/get_groups", response_model=getGroupsResponse)
 def get_groups(groupData: getGroupsSchema):
     '''this gives all the data of the groups that a user is a part of'''
     grpUuids = get_user_grps(groupData.userUdid)
@@ -25,10 +25,7 @@ def get_groups(groupData: getGroupsSchema):
     for grpUuid in grpUuids:
         grpData = grp_info_by_id(grpUuid)
         allGroupData.append(grpData)
-    return {
-    "message": f"Groups for user '{groupData.userUdid}'",
-    "groups": allGroupData
-    }
+    return getGroupsResponse(groups=allGroupData)
 
 @groups.post("/add_member")
 def add_member(groupData: addMember):

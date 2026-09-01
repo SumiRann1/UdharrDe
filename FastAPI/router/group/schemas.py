@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from uuid import UUID
+from typing import List, Dict
 
 # ---------- GROUP REQUEST SCHEMAS ----------
 
@@ -31,3 +32,6 @@ class removeMember(BaseModel):
 
 class getGroupsSchema(BaseModel):
     userUdid : UUID
+
+class getGroupsResponse(BaseModel):
+    groups: List[Dict]

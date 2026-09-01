@@ -86,6 +86,18 @@ def get_user_exp(uid: str):
         print(f"Error: {e}")
         raise e
 
+def get_grp_exp(g_uid: str):
+    '''public
+    output: expenses of a group -> (list of dicts)
+    returns all expenses where g_pay == g_uid'''
+    try:
+        response = supabase.table("expenses").select("*").eq("g_pay", g_uid).execute()
+        return response.data or []
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
+
+
 
 # create_exp_user("exp2", "6c1363ba-ae17-43e4-82e2-89894e651e89", 100, "7c1363ba-ae17-43e4-82e2-89894e651e89", "world world")
 # create_exp_grp("njc_chacha", "6c1363ba-ae17-43e4-82e2-89894e651e89", 2500, "c365fece-daa1-4100-9c68-0a7115b597b0", {"6c1363ba-ae17-43e4-82e2-89894e651e89": 1500, "b7ca1ba3-3bf6-4e82-849b-a4ac44b6ac62": 990})
